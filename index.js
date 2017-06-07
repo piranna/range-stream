@@ -1,25 +1,36 @@
-var through = require("through2")
+const Transform = require('stream').Transform
 
-module.exports = function (start, end) {
-  end = typeof end === 'number' ? end + 1 : Infinity
+const inherits = require('inherits')
 
-  var bytesReceived = 0
-  var lastByteFound = false
 
-  return through(function (chunk, enc, next) {
-    bytesReceived += chunk.length
+class RangeStream extends Transform {
+  constructor(start, end) {
+    super()
 
-    if (!lastByteFound && bytesReceived >= start) {
-      if (start - (bytesReceived - chunk.length) > 0)
-        chunk = chunk.slice(start - (bytesReceived - chunk.length))
+    this._start = start
+    this._end = typeof end === 'number' ? end + 1 : Infinity
 
-      if (end <= bytesReceived) {
-        this.push(chunk.slice(0, chunk.length - (bytesReceived - end)))
-        lastByteFound = true
+    this._bytesReceived = 0
+    this._lastByteFound = false
+  }
+
+  _transform(chunk, enc, next) {
+    this._bytesReceived += chunk.length
+
+    if (!this._lastByteFound && this._bytesReceived >= this._start) {
+      if (this._start - (this._bytesReceived - chunk.length) > 0)
+        chunk = chunk.slice(this._start - (this._bytesReceived - chunk.length))
+
+      if (this._end <= this._bytesReceived) {
+        this.push(chunk.slice(0, chunk.length - (this._bytesReceived - this._end)))
+        this._lastByteFound = true
       } else
         this.push(chunk)
     }
 
     next()
-  })
+  }
 }
+
+
+module.exports = RangeStream

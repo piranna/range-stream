@@ -1,4 +1,4 @@
-var rangeStream = require("../")
+var RangeStream = require("..")
 var assert = require("assert")
 var fs = require("fs")
 
@@ -17,7 +17,7 @@ describe("range-stream", function () {
       .on("end", function () {
 
         fs.createReadStream(textFile)
-          .pipe(rangeStream(start, end))
+          .pipe(new RangeStream(start, end))
           .on("data", function (chunk) { rangeWritten += chunk.toString() })
           .on("end", function () {
 
@@ -40,7 +40,7 @@ describe("range-stream", function () {
       .on("end", function () {
 
         fs.createReadStream(textFile)
-          .pipe(rangeStream(start))
+          .pipe(new RangeStream(start))
           .on("data", function (chunk) { rangeWritten += chunk.toString() })
           .on("end", function () {
 
