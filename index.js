@@ -15,19 +15,23 @@ class RangeStream extends Transform {
   }
 
   _transform(chunk, enc, next) {
-    this._bytesReceived += chunk.length
+    if(this._lastByteFound) return next()
 
-    if (!this._lastByteFound && this._bytesReceived >= this._start) {
-      if (this._start - (this._bytesReceived - chunk.length) > 0)
-        chunk = chunk.slice(this._start - (this._bytesReceived - chunk.length))
+    let consumed = this._bytesReceived + chunk.length
+    if (consumed >= this._start) {
+      let remaining = this._start - this._bytesReceived
+      if (remaining > 0) chunk = chunk.slice(remaining)
 
-      if (this._end <= this._bytesReceived) {
-        this.push(chunk.slice(0, chunk.length - (this._bytesReceived - this._end)))
+      let overconsumed = consumed - this._end
+      if (overconsumed >= 0) {
+        if (overconsumed) chunk = chunk.slice(0, chunk.length - overconsumed)
         this._lastByteFound = true
-      } else
-        this.push(chunk)
+      }
+
+      this.push(chunk)
     }
 
+    this._bytesReceived = consumed
     next()
   }
 }
