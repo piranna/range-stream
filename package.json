@@ -1,7 +1,7 @@
 {
   "name": "@piranna/range-stream",
   "description": "Receive a byte range from a readable stream",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "license": "MIT",
   "author": "Stephen Sawchuk <sawchuk@gmail.com>",
   "maintainers": [
